@@ -1,3 +1,5 @@
+
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -33,8 +35,12 @@ public class FTPclient extends JFrame implements ActionListener, WindowListener 
 
     public FTPclient() {
 
+        SystemInformation sysinfo = new SystemInformation("systeminfo.xml");
+        
+        
+        
         try {
-            streamSocket = new MyStreamSocket(InetAddress.getByName("localhost"), portNumber);
+            streamSocket = new MyStreamSocket(InetAddress.getByName(sysinfo.getAddress()), portNumber);
             serverName = streamSocket.receiveMessage();
             System.out.println(serverName);
         } catch (Exception ex) {
