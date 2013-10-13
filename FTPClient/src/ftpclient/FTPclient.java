@@ -1,5 +1,3 @@
-
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -35,10 +33,8 @@ public class FTPclient extends JFrame implements ActionListener, WindowListener 
 
     public FTPclient() {
 
-        SystemInformation sysinfo = new SystemInformation("systeminfo.xml");
-        
-        
-        
+        SystemInformation sysinfo = new SystemInformation("systeminfo.xml");     
+                
         try {
             streamSocket = new MyStreamSocket(InetAddress.getByName(sysinfo.getAddress()), portNumber);
             serverName = streamSocket.receiveMessage();
@@ -69,10 +65,7 @@ public class FTPclient extends JFrame implements ActionListener, WindowListener 
         cPane = getContentPane();
 
         InitializeMainGUIpanel();
-
-
-
-
+        
         JMenuBar menuBar = new JMenuBar();
         createFileMenu();
         setJMenuBar(menuBar);
@@ -174,17 +167,7 @@ public class FTPclient extends JFrame implements ActionListener, WindowListener 
         item.addActionListener(this);
         fileMenu.add(item);
     }
-
-
-    public static void main(String[] args) {
-
-
-        FTPclient f = new FTPclient();
-        f.setVisible(true);
-
-    }
-
-
+    
     @Override
     public void actionPerformed(ActionEvent actionEvent) {
         String actionName;
@@ -304,5 +287,13 @@ public class FTPclient extends JFrame implements ActionListener, WindowListener 
     @Override
     public void windowDeactivated(WindowEvent windowEvent) {
         //To change body of implemented methods use File | Settings | File Templates.
+    }
+    
+    public static void main(String[] args) {
+
+
+        FTPclient f = new FTPclient();
+        f.setVisible(true);
+
     }
 }

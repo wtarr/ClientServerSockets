@@ -1,8 +1,9 @@
 /**
- *
  * @author William
  * 
  * Modified version from - http://www.mkyong.com/java/how-to-read-xml-file-in-java-dom-parser/
+ * 
+ * This will "hide" but also allow the address and port details be updated if necessary
  */
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
@@ -53,14 +54,11 @@ public class SystemInformation {
             
             doc.getDocumentElement().normalize();
             
-            //System.out.println("Root element: " + doc.getDocumentElement().getNodeName());
-            
             Node node = doc.getElementsByTagName("userinfo").item(0);
             
             if (node.getNodeType() == Node.ELEMENT_NODE)
             {
-                Element element = (Element)node;
-                
+                Element element = (Element)node;                
                 setAddress(element.getElementsByTagName("address").item(0).getTextContent());
                 setPort(Integer.parseInt(element.getElementsByTagName("port").item(0).getTextContent()));
             }
