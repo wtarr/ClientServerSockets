@@ -10,6 +10,8 @@ public class MyStreamSocket extends Socket {
    private Socket  socket;
    private BufferedReader input;
    private PrintWriter output;
+   protected InputStream inStream;
+   protected OutputStream outStream;
 
    MyStreamSocket(InetAddress acceptorHost,
                   int acceptorPort ) throws SocketException,
@@ -26,10 +28,9 @@ public class MyStreamSocket extends Socket {
 
    private void setStreams( ) throws IOException{
       // get an input stream for reading from the data socket
-      InputStream inStream = socket.getInputStream();
-      input = 
-         new BufferedReader(new InputStreamReader(inStream));
-      OutputStream outStream = socket.getOutputStream();
+      inStream = socket.getInputStream();
+      input = new BufferedReader(new InputStreamReader(inStream));
+      outStream = socket.getOutputStream();
       // create a PrinterWriter object for character-mode output
       output = 
          new PrintWriter(new OutputStreamWriter(outStream));
