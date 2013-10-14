@@ -2,20 +2,18 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.net.InetAddress;
 
-public class FTPclient extends JFrame implements ActionListener, WindowListener {
+public class FTPclientGUI extends JFrame implements ActionListener, WindowListener {
 
-    private JPanel panel_main, panel_new, panel_existing, panel_Existing, cardPanel;
+    private JPanel panel_main, panel_new, panel_Existing, cardPanel;
     private CardLayout cardLayout;
     private JMenu fileMenu;
     private Toolkit toolkit;
     private JLabel lblname, lblSelectedDir;
-    private JTextField txtUserName, txtSelectedDir;
-    private JButton btnNew,
-            btnSendNewUser,
-            btnCancelNewUser,
-            btnExisting,
+    private JTextField txtUserName, txtNewUserName, txtSelectedDir;
+    private JButton 
+            btnNew, btnJoin, btnCancelNewUser,
+            btnExisting, btnLogin, btnCancelLogin,
             btnSend,
             btnClose,
             btnUpload,
@@ -23,27 +21,15 @@ public class FTPclient extends JFrame implements ActionListener, WindowListener 
     private String[] directories, files;
     private JList dirList, filesList;
     private String message, serverName = "";
-    private Container cPane;
-    private int portNumber = 12000;
-
+    private Container cPane; 
     private BorderLayout layout;
+    private Client client;
 
-    private MyStreamSocket streamSocket;
 
-
-    public FTPclient() {
-
-        SystemInformation sysinfo = new SystemInformation("systeminfo.xml");     
-                
-        try {
-            streamSocket = new MyStreamSocket(InetAddress.getByName(sysinfo.getAddress()), portNumber);
-            serverName = streamSocket.receiveMessage();
-            System.out.println(serverName);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            System.exit(1);
-        }
-
+    public FTPclientGUI() {
+        
+        client = new Client();
+        
         setTitle("FTP - Client");
         setSize(400, 300);
         setResizable(false);
@@ -71,15 +57,16 @@ public class FTPclient extends JFrame implements ActionListener, WindowListener 
         setJMenuBar(menuBar);
         menuBar.add(fileMenu);
 
-        cardPanel.add(panel_main, "1");
+        
         //cardPanel.add(panel_Existing, "2");
-        InitializeNewUser();
-        InitializeDirectoryPanel();
+        initializeNewUser();
+        initializeLoginPanel();
+        initializeDirectoryPanel();
 
         cPane.add(cardPanel);
     }
 
-    private void InitializeDirectoryPanel() {
+    private void initializeDirectoryPanel() {
 
         panel_Existing = new JPanel(new GridLayout(2, 1, 5, 5));
         panel_Existing.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
@@ -111,11 +98,12 @@ public class FTPclient extends JFrame implements ActionListener, WindowListener 
 
         panel_Existing.add(temp);
 
-        cardPanel.add(panel_Existing, "3");
+        cardPanel.add(panel_Existing, "4");
     }
 
     private void InitializeMainGUIpanel() {
 
+        /// MAIN PANEL !!!!
         panel_main = new JPanel(new GridLayout(2, 1, 5, 5));
         panel_main.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
@@ -133,28 +121,51 @@ public class FTPclient extends JFrame implements ActionListener, WindowListener 
         temp.add(btnNew);
         temp.add(btnExisting);
         panel_main.add(temp);
-
+        cardPanel.add(panel_main, "1");
     }
 
-    private void InitializeNewUser()
+    private void initializeNewUser()
     {
+        /// NEW USERS !!!!!
         panel_new = new JPanel(new GridLayout(2, 1, 5, 40));
         panel_new.setBorder(BorderFactory.createEmptyBorder(40, 5, 40, 5));
         lblname = new JLabel("User Name: ");
-        txtUserName = new JTextField(30);
+        txtNewUserName = new JTextField(30);
 
 
-        btnSendNewUser = new JButton("Join");
-        btnSendNewUser.addActionListener(this);
+        btnJoin = new JButton("Join");
+        btnJoin.addActionListener(this);
         btnCancelNewUser = new JButton("Cancel");
         btnCancelNewUser.addActionListener(this);
 
         panel_new.add(lblname);
-        panel_new.add(txtUserName);
-        panel_new.add(btnSendNewUser);
+        panel_new.add(txtNewUserName);
+        panel_new.add(btnJoin);
         panel_new.add(btnCancelNewUser);
 
-        cardPanel.add(panel_new, "2");
+        cardPanel.add(panel_new, "3");
+    }
+    
+    private void initializeLoginPanel()
+    {
+        ///EXISTING USERS !!!!
+        panel_Existing = new JPanel(new GridLayout(2, 1, 5, 40));
+        panel_Existing.setBorder(BorderFactory.createEmptyBorder(40, 5, 40, 5));
+        lblname = new JLabel("User Name: ");
+        txtUserName = new JTextField(30);
+
+
+        btnLogin = new JButton("Join");
+        btnLogin.addActionListener(this);
+        btnCancelLogin = new JButton("Cancel");
+        btnCancelLogin.addActionListener(this);
+
+        panel_Existing.add(lblname);
+        panel_Existing.add(txtUserName);
+        panel_Existing.add(btnLogin);
+        panel_Existing.add(btnCancelLogin);
+
+        cardPanel.add(panel_Existing, "2");
     }
 
     private void createFileMenu() {
@@ -172,56 +183,41 @@ public class FTPclient extends JFrame implements ActionListener, WindowListener 
     public void actionPerformed(ActionEvent actionEvent) {
         String actionName;
 
-        actionName = actionEvent.getActionCommand();
-
-        try {
+        actionName = actionEvent.getActionCommand();        
 
             if (actionName.equals("EXIT")) {
-                streamSocket.sendMessage("200");
-                message = streamSocket.receiveMessage();
-                System.out.println(message);
-                if (message.contains("200"))   // acknowledge
-                {
-                    streamSocket.close();
-                    System.exit(0);
-                }
+                client.exit();
             }
             else if (actionEvent.getSource().equals(btnNew))
             {
                 // Initialize new User
-                cardLayout.show(cardPanel, "2");
+                cardLayout.show(cardPanel, "3");
             }
             else if (actionEvent.getSource().equals(btnExisting))
             {
                 // Initialize Existing
-                cardLayout.show(cardPanel, "3");
+                cardLayout.show(cardPanel, "2"); // show login panel
 
             }
-            else if (actionEvent.getSource().equals(btnSendNewUser))
-            {
-                // Send user name to server
-                streamSocket.sendMessage("101"); // inform server that wish to add new user
-                message = streamSocket.receiveMessage();
-                if (message.contains("102")) // ok to send new user details
-                {
-                    streamSocket.sendMessage(txtUserName.getText());
-                }
-                message = streamSocket.receiveMessage();
-                if (message.contains("103"))
-                {
-                    JOptionPane.showMessageDialog(null, "User successfully added");
-                }
-                else
-                {
-                    JOptionPane.showMessageDialog(null, "Something went wrong");
-                }
-
-                cardLayout.show(cardPanel, "3");
+            else if (actionEvent.getSource().equals(btnJoin))
+            {                
+                boolean ok = client.createNew(txtNewUserName.getText());
+                txtUserName.setText("");
+                if (ok)
+                    cardLayout.show(cardPanel, "4");
             }
-            else if (actionEvent.getSource().equals(btnCancelNewUser))
+            else if (actionEvent.getSource().equals(btnCancelNewUser) ||
+                    actionEvent.getSource().equals(btnCancelLogin) )
             {
                 // return to main
                 cardLayout.show(cardPanel, "1");
+            }
+            else if (actionEvent.getSource().equals(btnLogin))
+            {
+                boolean ok = client.login();
+                txtUserName.setText("");
+                if (ok)
+                    cardLayout.show(cardPanel, "4");
             }
             else if (actionEvent.getSource() == btnSend) {
                 /*String name2Send = txtUserName.getText();
@@ -229,18 +225,9 @@ public class FTPclient extends JFrame implements ActionListener, WindowListener 
                 message = streamSocket.receiveMessage();
                 System.out.println(message);*/
             } else if (actionEvent.getSource() == btnClose) {
-                streamSocket.sendMessage("200");
-                message = streamSocket.receiveMessage();
-                System.out.println(message);
-                if (message.contains("200")) // acknowledge close request
-                {
-                    streamSocket.close();
-                    System.exit(0);
-                }
+                client.exit();
             }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
+        
     }
 
     @Override
@@ -251,17 +238,7 @@ public class FTPclient extends JFrame implements ActionListener, WindowListener 
     @Override
     public void windowClosing(WindowEvent windowEvent) {
         //To change body of implemented methods use File | Settings | File Templates.
-        try {
-            streamSocket.sendMessage("200");
-            message = streamSocket.receiveMessage();
-            System.out.println(message);
-            if (message.contains("200"))   // acknowledge
-            {
-                streamSocket.close();
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
+        client.exit();
     }
 
     @Override
@@ -292,7 +269,7 @@ public class FTPclient extends JFrame implements ActionListener, WindowListener 
     public static void main(String[] args) {
 
 
-        FTPclient f = new FTPclient();
+        FTPclientGUI f = new FTPclientGUI();
         f.setVisible(true);
 
     }
