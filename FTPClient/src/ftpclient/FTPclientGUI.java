@@ -2,14 +2,22 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.util.ArrayList;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 public class FTPclientGUI extends JFrame implements ActionListener, WindowListener {
 
-    private JPanel panel_main, panel_new, panel_Existing, cardPanel;
+    private JPanel 
+            panel_main,
+            panel_new,
+            panel_Existing,
+            panel_directory,
+            cardPanel;
     private CardLayout cardLayout;
     private JMenu fileMenu;
     private Toolkit toolkit;
-    private JLabel lblname, lblSelectedDir;
+    private JLabel lblname, lblFile, lblSelectedFile;
     private JTextField txtUserName, txtNewUserName, txtSelectedDir;
     private JButton 
             btnNew, btnJoin, btnCancelNewUser,
@@ -17,10 +25,11 @@ public class FTPclientGUI extends JFrame implements ActionListener, WindowListen
             btnSend,
             btnClose,
             btnUpload,
-            btnDownload;
-    private String[] directories, files;
-    private JList dirList, filesList;
-    private String message, serverName = "";
+            btnDownload,
+            btnDelete;
+    private DefaultListModel<String> files;
+    private JList jDirectoryList;
+    private String serverName = "";
     private Container cPane; 
     private BorderLayout layout;
     private Client client;
@@ -28,15 +37,15 @@ public class FTPclientGUI extends JFrame implements ActionListener, WindowListen
 
     public FTPclientGUI() {
         
-        client = new Client();
+        client = new Client();        
         
         setTitle("FTP - Client");
         setSize(400, 300);
         setResizable(false);
         addWindowListener(this);
 
-        directories = new String[]{"Test1", "Test2"};
-        files = new String[]{"File1, File2"};
+        //directories = new String[]{"Test1", "Test2"};
+        //files = new String[]{"File1, File2"};
 
         cardLayout = new CardLayout();
 
@@ -67,38 +76,53 @@ public class FTPclientGUI extends JFrame implements ActionListener, WindowListen
     }
 
     private void initializeDirectoryPanel() {
-
-        panel_Existing = new JPanel(new GridLayout(2, 1, 5, 5));
-        panel_Existing.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        // MAIN INTERFACE DIRECTORY !!!!!
+        panel_directory = new JPanel(new GridLayout(3, 1, 5, 5));
+        panel_directory.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
         // http://docs.oracle.com/javase/tutorial/uiswing/components/list.html
-        dirList = new JList(directories);
-        dirList.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-        dirList.setLayoutOrientation(JList.VERTICAL);
-        dirList.setVisibleRowCount(-1);
+        jDirectoryList = new JList();
+        jDirectoryList.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+        jDirectoryList.setLayoutOrientation(JList.VERTICAL);
+        jDirectoryList.setVisibleRowCount(-1);
+        jDirectoryList.addListSelectionListener(new ListSelectionListener() {
 
-        JScrollPane listScroller = new JScrollPane(dirList);
+            @Override
+            public void valueChanged(ListSelectionEvent lse) {
+                lblSelectedFile.setText(jDirectoryList.getSelectedValue().toString());
+            }
+        });
+
+        JScrollPane listScroller = new JScrollPane(jDirectoryList);
         listScroller.setPreferredSize(new Dimension(200, 90));
 
-        panel_Existing.add(dirList);
+        panel_directory.add(jDirectoryList);
 
-        JPanel temp = new JPanel(new GridLayout(2, 2, 5, 5));
+        JPanel temp = new JPanel(new GridLayout(1, 2, 5, 5));
 
-        lblSelectedDir = new JLabel("File");
-        txtSelectedDir = new JTextField(30);
+        lblFile = new JLabel("File");
+        //txtSelectedDir = new JTextField(30);
+        lblSelectedFile = new JLabel(">_<");
+        temp.add(lblFile);
+        temp.add(lblSelectedFile);
+        panel_directory.add(temp);
+        
+        temp = new JPanel(new GridLayout(1, 3, 5, 5));
         btnUpload = new JButton("Upload");
         btnUpload.addActionListener(this);
         btnDownload = new JButton("Download");
         btnDownload.addActionListener(this);
+        btnDelete = new JButton("Delete");
+        btnDelete.addActionListener(this);
 
-        temp.add(lblSelectedDir);
-        temp.add(txtSelectedDir);
+        
         temp.add(btnUpload);
         temp.add(btnDownload);
+        temp.add(btnDelete);
 
-        panel_Existing.add(temp);
+        panel_directory.add(temp);
 
-        cardPanel.add(panel_Existing, "4");
+        cardPanel.add(panel_directory, "4");
     }
 
     private void InitializeMainGUIpanel() {
@@ -154,8 +178,7 @@ public class FTPclientGUI extends JFrame implements ActionListener, WindowListen
         lblname = new JLabel("User Name: ");
         txtUserName = new JTextField(30);
 
-
-        btnLogin = new JButton("Join");
+        btnLogin = new JButton("Login FFS");
         btnLogin.addActionListener(this);
         btnCancelLogin = new JButton("Cancel");
         btnCancelLogin.addActionListener(this);
@@ -187,15 +210,21 @@ public class FTPclientGUI extends JFrame implements ActionListener, WindowListen
 
             if (actionName.equals("EXIT")) {
                 client.exit();
+                System.exit(0);
+            }
+            else if (actionName.equals("Log off"))
+            {
+                client.logout();
+                cardLayout.show(cardPanel, "1");
             }
             else if (actionEvent.getSource().equals(btnNew))
             {
-                // Initialize new User
+                // Show new user screen
                 cardLayout.show(cardPanel, "3");
             }
             else if (actionEvent.getSource().equals(btnExisting))
             {
-                // Initialize Existing
+                // Show the login screen
                 cardLayout.show(cardPanel, "2"); // show login panel
 
             }
@@ -214,10 +243,17 @@ public class FTPclientGUI extends JFrame implements ActionListener, WindowListen
             }
             else if (actionEvent.getSource().equals(btnLogin))
             {
-                boolean ok = client.login();
+                boolean ok = client.login(txtUserName.getText());
                 txtUserName.setText("");
                 if (ok)
+                {
+                    files = client.fetchDirectoryListing();
+                    jDirectoryList.removeAll();
+                    jDirectoryList.setModel(files);
+                    
                     cardLayout.show(cardPanel, "4");
+                    
+                }
             }
             else if (actionEvent.getSource() == btnSend) {
                 /*String name2Send = txtUserName.getText();
@@ -226,7 +262,9 @@ public class FTPclientGUI extends JFrame implements ActionListener, WindowListen
                 System.out.println(message);*/
             } else if (actionEvent.getSource() == btnClose) {
                 client.exit();
+                System.exit(0);
             }
+            
         
     }
 
