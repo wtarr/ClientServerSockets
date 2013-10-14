@@ -1,5 +1,3 @@
-package ftpserver;
-
 import java.util.ArrayList;
 
 /**

@@ -1,11 +1,16 @@
 import java.io.*;
 import java.net.ServerSocket;
+import java.util.ArrayList;
 
 public class FTPserver {
 	
-	static String names = "";
+	public static String names = "";
+        public static ArrayList<Directory> serversDirectoryListing = 
+                new ArrayList<>();
+        
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException {            
+            
         int serverPort = 12000;
         String servername = "";
         InputStreamReader converter = new InputStreamReader(System.in);
