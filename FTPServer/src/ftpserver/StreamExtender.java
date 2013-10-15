@@ -32,29 +32,25 @@ public class StreamExtender extends MyStreamSocket {
         super(socket);
     }
 
-    public boolean recieveFile(File dir, String file, int size) { // use this receicve
+    public boolean recieveFile(File file, int size) { // use this receicve
         try {    
-           
-            File f = new File(dir, file);
-            //f.createNewFile();
-            
-            FileOutputStream fos = new FileOutputStream(f);
+                                   
+            FileOutputStream fos = new FileOutputStream(file);
             byte[] byteme = new byte[1024];
-            int count = 0;
-            int total = 0;
-            while ((count = inStream.read(byteme))!= -1)
+            int recieveCount;
+            int totalRecieved = 0;
+            while (-1 != (recieveCount = inStream.read(byteme)))
             {
-                fos.write(byteme, 0, count);
-                System.out.println("Recieved " + count);
-                total += count;
-                System.out.println("total " + total);
-                if (total == size)    
-                    break;                    
+                fos.write(byteme, 0, recieveCount);
+                System.out.println("Recieved " + recieveCount);
+                totalRecieved += recieveCount;                
+                if (totalRecieved == size)    
+                    break; // transfer complete                    
             }
             fos.flush();
             fos.close();   
-            System.out.println("closing fos");
-            System.out.println("It is done");
+            System.out.println("File Transfer Inbound complete");
+            
             return true;
 
         } catch (IOException ex) {
@@ -63,7 +59,7 @@ public class StreamExtender extends MyStreamSocket {
         return false;
     }
 
-    public boolean SendFile(File file) { // use this send              
+    public boolean SendFile(File file) {               
         try {
             outStream.flush();
             System.out.println("sending...");
@@ -74,16 +70,15 @@ public class StreamExtender extends MyStreamSocket {
             while (-1 != (count = fis.read(byteme, 0, byteme.length)))
             {
                 outStream.write(byteme, 0, count);
-                System.out.println("Sent " + count);
-                //break;
+                System.out.println("Sent " + count);                
                 outStream.flush();
             }
-            //socket.shut();
-            //socket.sh
+            
             fis.close();
-            System.out.println(".... Sent");
+            System.out.println("File Transfer outbound Complete");
             return true;
         } catch (IOException ex) {
+            ex.printStackTrace();
             System.out.println("Sending failed");
         }
         return false;

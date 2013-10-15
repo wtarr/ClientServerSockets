@@ -40,7 +40,10 @@ public class FTPServerThread implements Runnable {
                         break;
                     case "202":
                         receiveFile();
-                        break;                     
+                        break; 
+                    case "207":
+                        transmitFile();
+                        break;
                     case "300":
                         closeConnection();
                         break;
@@ -144,6 +147,59 @@ public class FTPServerThread implements Runnable {
 
     }
     
+    private void transmitFile()
+    {
+        try {
+            // send ack and request for file name and 
+            String file = "";
+            File f = new File("");
+            
+            myStreamSocket.sendMessage("208");
+            message = myStreamSocket.receiveMessage();
+            // search and ensure that file exists on server
+            boolean fileExists = false;
+            for(String fi : currentUsersDirectory.getDirListing())
+            {
+                if (fi.equals(message));
+                    fileExists = true;
+            }            
+            if (fileExists)
+            {
+                file = message;
+                myStreamSocket.sendMessage("213");
+            }
+            else
+            {
+                myStreamSocket.sendMessage("214"); // cannot find file
+            }
+            message = myStreamSocket.receiveMessage();
+            
+            if (message.contains("209"))
+            {
+                f = new File("ROOT/" + currentUsersDirectory.getOwner(), file);
+                int size = (int)f.length();
+                myStreamSocket.sendMessage("" + size);
+            }
+            
+            message = myStreamSocket.receiveMessage();
+            
+            if (message.contains("210"))
+            {
+                File here = new File("ROOT/" + currentUsersDirectory.getOwner(), f.getName());
+                
+                
+                myStreamSocket.SendFile(here);
+                System.out.println("File being sent" + f.getPath());
+            }
+            
+            
+        } 
+        catch (IOException ex)
+        {
+            ex.printStackTrace();
+        }
+    }
+    
     private void receiveFile()
     {
         try {
@@ -157,7 +213,10 @@ public class FTPServerThread implements Runnable {
             
             //System.out.println(message);
             myStreamSocket.sendMessage("204"); // send the file, im a waiting
-            boolean success = myStreamSocket.recieveFile(f, name, size);
+            
+            File fcombined = new File(f, name);
+            
+            boolean success = myStreamSocket.recieveFile(fcombined, size);
             
             if (success)
                 myStreamSocket.sendMessage("205");
