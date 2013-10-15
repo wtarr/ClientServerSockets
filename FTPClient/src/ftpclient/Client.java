@@ -12,7 +12,7 @@ import javax.swing.ListModel;
  */
 public class Client {
 
-    private MyStreamSocket streamSocket;
+    private StreamExtender streamSocket;
     private String message;
     private String serverName;
     private SystemInformation sysinfo;
@@ -20,7 +20,7 @@ public class Client {
     public Client() {
         try {
             sysinfo = new SystemInformation("systeminfo.xml");
-            streamSocket = new MyStreamSocket(InetAddress.getByName(sysinfo.getAddress()), sysinfo.getPort());
+            streamSocket = new StreamExtender(InetAddress.getByName(sysinfo.getAddress()), sysinfo.getPort());
             serverName = streamSocket.receiveMessage();
             System.out.println(serverName);
         } catch (Exception ex) {
@@ -96,7 +96,45 @@ public class Client {
         }
     }
 
-    public void upload() {
+    public void upload(File file) {
+        try
+        {
+            streamSocket.sendMessage("202");
+            message = streamSocket.receiveMessage();
+            System.out.println(message);
+            if (message.contains("203"))
+            {
+                streamSocket.sendMessage(file.getName()+ ";" + (int)file.length());
+                System.out.println(file.getName());
+                System.out.println((int)file.length());
+                        
+                
+                message = streamSocket.receiveMessage();
+                System.out.println(message);
+                if (message.contains("204"))
+                {
+                    
+                    boolean result = streamSocket.SendFile(file);
+                    System.out.println(result);
+                    message = streamSocket.receiveMessage();
+                    if (message.contains("205"))
+                    {
+                        JOptionPane.showMessageDialog(null, "Upload successful");
+                    }
+                }
+            }
+            else
+            {
+                JOptionPane.showMessageDialog(null, "fuck");
+            }
+            
+        }
+        catch (IOException ex)
+        {
+            ex.printStackTrace();
+        }
+        
+        
     }
 
     public void download() {
@@ -128,10 +166,15 @@ public class Client {
     }
 
     public void exit() {
-        if (!streamSocket.isClosed())
+        if (streamSocket.isClosed())
+        {
+            System.exit(0);
+        }
+        else
         {
             logout();
             System.exit(0);
         }
+       
     }
 }

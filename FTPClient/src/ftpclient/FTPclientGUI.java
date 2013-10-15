@@ -255,6 +255,17 @@ public class FTPclientGUI extends JFrame implements ActionListener, WindowListen
                     
                 }
             }
+            else if (actionEvent.getSource().equals(btnUpload))
+            {
+                JFileChooser jfc = new JFileChooser();
+                int returnval = jfc.showOpenDialog(this);
+                if (returnval == JFileChooser.APPROVE_OPTION)
+                {
+                    client.upload(jfc.getSelectedFile());
+                }
+                
+                
+            }
             else if (actionEvent.getSource() == btnSend) {
                 /*String name2Send = txtUserName.getText();
                 streamSocket.sendMessage("101 " + name2Send);
