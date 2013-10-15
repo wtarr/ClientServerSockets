@@ -1,17 +1,17 @@
 
 import java.io.*;
+import java.security.acl.Owner;
 import java.util.ArrayList;
 
 public class FTPServerThread implements Runnable {
 
     private String serverName;
-    private MyStreamSocket myStreamSocket;
+    private StreamExtender myStreamSocket;
     private String message;
-    private Boolean session;
-    private String currentUser;
+    private Boolean session;    
     private Directory currentUsersDirectory;
 
-    public FTPServerThread(MyStreamSocket myStreamSocket, String servername) {
+    public FTPServerThread(StreamExtender myStreamSocket, String servername) {
 
         this.myStreamSocket = myStreamSocket;
         this.serverName = servername;
@@ -38,6 +38,9 @@ public class FTPServerThread implements Runnable {
                     case "200":
                         sendDirectoryListingForCurrentUser();
                         break;
+                    case "202":
+                        receiveFile();
+                        break;                     
                     case "300":
                         closeConnection();
                         break;
@@ -86,9 +89,10 @@ public class FTPServerThread implements Runnable {
 
             for (Directory d : FTPserver.serversDirectoryListing) {
                 if (d.getOwner().toLowerCase().equals(message.toLowerCase())) {
-                    currentUser = message;
+                    //curer = message;
                     currentUsersDirectory = d;
-                    signalToReturn = "106"; // login successful 
+                    signalToReturn = "106"; // login successful
+                    System.out.println(d.getOwner() + " is connected");
                 }
             }
             
@@ -129,14 +133,40 @@ public class FTPServerThread implements Runnable {
 
         // else
         Directory d = new Directory();
-        d.setOwner(name);
+        d.setOwner(name.toLowerCase());
         File root = new File("ROOT");
         File combined = new File(root, name);
         boolean created = combined.mkdir();
         FTPserver.serversDirectoryListing.add(d);
         System.out.println(name + "- directory created for new user");
-        currentUser = name;
+        //currentUser = name;
         return "103";
 
+    }
+    
+    private void receiveFile()
+    {
+        try {
+            myStreamSocket.sendMessage("203");  // tell client send file name
+            message = myStreamSocket.receiveMessage(); // this is the file name and size 
+
+            String name = message.split(";")[0];
+            int size = Integer.parseInt(message.split(";")[1]);
+            System.out.println("size" + size);
+            File f = new File("ROOT", currentUsersDirectory.getOwner());
+            
+            //System.out.println(message);
+            myStreamSocket.sendMessage("204"); // send the file, im a waiting
+            boolean success = myStreamSocket.recieveFile(f, name, size);
+            
+            if (success)
+                myStreamSocket.sendMessage("205");
+            else
+                myStreamSocket.sendMessage("206");
+            
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 } // class

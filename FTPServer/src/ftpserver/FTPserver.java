@@ -61,7 +61,7 @@ public class FTPserver {
             while (true) {
                 System.out.println("Waiting for connections");
 
-                MyStreamSocket myStreamSocket = new MyStreamSocket(
+                StreamExtender myStreamSocket = new StreamExtender(
                         myServerSocket.accept());
 
                 System.out.println("Connection accepted");

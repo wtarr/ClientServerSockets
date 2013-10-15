@@ -7,7 +7,7 @@ import java.io.*;
  * @author M. L. Liu
  */
 public class MyStreamSocket extends Socket {
-   private Socket  socket;
+   protected Socket  socket;
    private BufferedReader input;
    private PrintWriter output;
    protected InputStream inStream;
