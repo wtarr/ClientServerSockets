@@ -18,15 +18,21 @@ public class Client {
     private SystemInformation sysinfo;
 
     public Client() {
+        connect();
+    }
+
+    public boolean connect() {
         try {
             sysinfo = new SystemInformation("systeminfo.xml");
             streamSocket = new StreamExtender(InetAddress.getByName(sysinfo.getAddress()), sysinfo.getPort());
             serverName = streamSocket.receiveMessage();
             System.out.println(serverName);
+            return true;
         } catch (Exception ex) {
             ex.printStackTrace();
             System.exit(1);
         }
+        return false;
     }
 
     public boolean createNew(String txtUserName) {
@@ -97,50 +103,78 @@ public class Client {
     }
 
     public void upload(File file) {
-        try
-        {
+        try {
             streamSocket.sendMessage("202");
             message = streamSocket.receiveMessage();
             System.out.println(message);
-            if (message.contains("203"))
-            {
-                streamSocket.sendMessage(file.getName()+ ";" + (int)file.length());
+            if (message.contains("203")) {
+                streamSocket.sendMessage(file.getName() + ";" + (int) file.length());
                 System.out.println(file.getName());
-                System.out.println((int)file.length());
-                        
-                
+                System.out.println((int) file.length());
+
+
                 message = streamSocket.receiveMessage();
                 System.out.println(message);
-                if (message.contains("204"))
-                {
-                    
+                if (message.contains("204")) {
+
                     boolean result = streamSocket.SendFile(file);
                     System.out.println(result);
                     message = streamSocket.receiveMessage();
-                    if (message.contains("205"))
-                    {
+                    if (message.contains("205")) {
                         JOptionPane.showMessageDialog(null, "Upload successful");
                     }
                 }
+            } else {
+                JOptionPane.showMessageDialog(null, "oh fudge it, error in upload");
             }
-            else
-            {
-                JOptionPane.showMessageDialog(null, "fuck");
-            }
-            
-        }
-        catch (IOException ex)
-        {
+
+        } catch (IOException ex) {
             ex.printStackTrace();
         }
-        
-        
+
+
     }
 
-    public void download() {
-    }
+    public boolean download(File file) {
+        
+        try {            
+            int fileSize = 0;
+            
+            streamSocket.sendMessage("207");  // requesting to download a file
+            message = streamSocket.receiveMessage(); // wait for server to acknowledge
+            //System.out.println(message);
+            if (message.contains("208")) {
+                // server acknowledges, send file name
+                streamSocket.sendMessage(file.getName());
+            }
 
-    public DefaultListModel<String> fetchDirectoryListing() {
+            message = streamSocket.receiveMessage();
+
+            if (message.contains("213")) {
+                // file exists on server
+                streamSocket.sendMessage("209"); // request file size
+            }
+
+            fileSize = 
+                    Integer.parseInt(streamSocket.receiveMessage()); // the file size 
+            
+            streamSocket.sendMessage("210"); // OK GO!!!
+            // This is it, file inbound
+            
+            streamSocket.recieveFile(file, fileSize);          
+
+            
+            return true;
+
+    }
+    catch (IOException ex)
+    {
+            ex.printStackTrace();
+            System.out.println("feck");
+    }
+        return false;
+}
+public DefaultListModel<String> fetchDirectoryListing() {
         DefaultListModel<String> list = new DefaultListModel<String>();
         try {
             streamSocket.sendMessage("200");
