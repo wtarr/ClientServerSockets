@@ -67,7 +67,7 @@ public class FTPserver {
                 System.out.println("Connection accepted");
                 // Start a new thread
                 Thread thread = new Thread(new FTPServerThread(myStreamSocket,
-                        servername));
+                        servername, root));
 
                 thread.start();
             }
@@ -77,12 +77,10 @@ public class FTPserver {
         }
     }
 
-    public static void main(String[] args) throws IOException {
-
-        FTPserver ftp = new FTPserver();
-    }
-
-    public void buildDirectoryListing() {
+    public synchronized void buildDirectoryListing() {
+        
+        FTPserver.serversDirectoryListing.clear();
+        
         for (File sub : root.listFiles())
         {          
             Directory d = new Directory();
@@ -91,9 +89,15 @@ public class FTPserver {
             {
                 d.dirListing.add(f.getName());
             }            
-            FTPserver.serversDirectoryListing.add(d);
-            
+            FTPserver.serversDirectoryListing.add(d);            
         }
                 
     }
+    
+    public static void main(String[] args) throws IOException {
+
+        FTPserver ftp = new FTPserver();
+    }
+    
+    
 }

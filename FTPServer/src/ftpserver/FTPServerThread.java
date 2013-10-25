@@ -10,11 +10,14 @@ public class FTPServerThread implements Runnable {
     private String message;
     private Boolean session;    
     private Directory currentUsersDirectory;
+    private File root;
 
-    public FTPServerThread(StreamExtender myStreamSocket, String servername) {
+    public FTPServerThread(StreamExtender myStreamSocket, String servername, File root) {
 
         this.myStreamSocket = myStreamSocket;
         this.serverName = servername;
+        this.root = root;      
+        
     }
 
     public void run() {
@@ -113,7 +116,7 @@ public class FTPServerThread implements Runnable {
     
     private void sendDirectoryListingForCurrentUser()
     {
-        try {
+        try {            
             myStreamSocket.sendMessage("201");  // tell client to expect file listing in next transmission
             message = ""; 
 
@@ -219,7 +222,10 @@ public class FTPServerThread implements Runnable {
             boolean success = myStreamSocket.recieveFile(fcombined, size);
             
             if (success)
+            {
                 myStreamSocket.sendMessage("205");
+                currentUsersDirectory.dirListing.add(name);
+            }
             else
                 myStreamSocket.sendMessage("206");
             
@@ -228,4 +234,5 @@ public class FTPServerThread implements Runnable {
             ex.printStackTrace();
         }
     }
+        
 } // class
