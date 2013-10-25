@@ -1,4 +1,3 @@
-
 import javax.swing.JOptionPane;
 import java.io.*;
 import java.net.InetAddress;
@@ -37,12 +36,16 @@ public class Client {
 
     public boolean createNew(String txtUserName) {
         try {
-            // Send user name to server
+            
             streamSocket.sendMessage("101"); // inform server that wish to add new user
             message = streamSocket.receiveMessage();
             if (message.contains("102")) // ok to send new user details
             {
                 streamSocket.sendMessage(txtUserName);
+            }
+            else
+            {
+                JOptionPane.showMessageDialog(null, "Something went wrong");
             }
             message = streamSocket.receiveMessage();
             if (message.contains("103")) {
