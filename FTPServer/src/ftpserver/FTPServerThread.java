@@ -42,13 +42,13 @@ public class FTPServerThread implements Runnable {
                         sendDirectoryListingForCurrentUser();
                         break;
                     case "202":
-                        receiveFile();
+                        fileRecieve();
                         break; 
                     case "207":
-                        transmitFile();
+                        fileTransmit();
                         break;
                     case "300":
-                        closeConnection();
+                        closeConnection(); // user logging off
                         break;
                 }
 
@@ -63,9 +63,9 @@ public class FTPServerThread implements Runnable {
 
     }
 
-    public void addName(String name) {
-        FTPserver.names = FTPserver.names + name + " ";
-    }
+//    public void addName(String name) {
+//        FTPserver.names = FTPserver.names + name + " ";
+//    }
 
     public void addNewUser() {
         try {
@@ -77,7 +77,7 @@ public class FTPServerThread implements Runnable {
         }
     }
 
-    private void closeConnection() {
+    public void closeConnection() {
         try {
             myStreamSocket.sendMessage("301 Ending session ...");
             session = false;
@@ -86,7 +86,7 @@ public class FTPServerThread implements Runnable {
         }
     }
 
-    private void login() {
+    public void login() {
         String signalToReturn = "107";
 
         try {
@@ -107,14 +107,10 @@ public class FTPServerThread implements Runnable {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
-    }
+    }   
     
-    private void logoff()
-    {
-        
-    }
     
-    private void sendDirectoryListingForCurrentUser()
+    public void sendDirectoryListingForCurrentUser()
     {
         try {            
             myStreamSocket.sendMessage("201");  // tell client to expect file listing in next transmission
@@ -129,7 +125,7 @@ public class FTPServerThread implements Runnable {
         }
     }
 
-    private String createDirectory(String name) {
+    public String createDirectory(String name) {
         // check if exists??
         for (Directory d : FTPserver.serversDirectoryListing) {
             if (d.getOwner().toLowerCase().equals(name.toLowerCase())) {
@@ -150,7 +146,7 @@ public class FTPServerThread implements Runnable {
 
     }
     
-    private void transmitFile()
+    public void fileTransmit()
     {
         try {
             // send ack and request for file name and 
@@ -203,7 +199,7 @@ public class FTPServerThread implements Runnable {
         }
     }
     
-    private void receiveFile()
+    public void fileRecieve()
     {
         try {
             myStreamSocket.sendMessage("203");  // tell client send file name

@@ -3,17 +3,19 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 
-public class FTPserver {
+public final class FTPserver {
 
     public static String names = "";
     public static ArrayList<Directory> serversDirectoryListing;
     private String servername;
     private int serverPort;
     private File root;
+    private String defaultServername = "FTP Server";
+    private int defaultPort = 12000;
 
     public FTPserver() {
-        servername = "";
-        serverPort = 12000;
+        servername = defaultServername;
+        serverPort = defaultPort;
         initialiseServer();
     }
 
@@ -23,21 +25,23 @@ public class FTPserver {
             serversDirectoryListing = new ArrayList<>();
             InputStreamReader converter = new InputStreamReader(System.in);
             BufferedReader in = new BufferedReader(converter);
-
-
-
+            
             System.out.println("----------------------------\n"
                     + "---------FTP Server---------\n"
                     + "----------------------------\n\n");
 
             System.out.println("Beginning Initial setup.....\n\n");
 
-            System.out.println("Enter a name for the server");
-            servername = in.readLine();
-            System.out.println("Enter the port number: ");
-            serverPort = Integer.parseInt(in.readLine());
-
-
+            System.out.println("Enter a name for the server: (hit return for default)");
+            String input = in.readLine();
+            if (!input.equals(""))
+                servername = input;
+                        
+            System.out.println("Enter the port number: (hit return for default (12000))");            
+            input = in.readLine();
+            if (!input.equals(""))
+                serverPort = Integer.parseInt(input);
+            
             // Check for root folder, else create one.
             root = new File("ROOT");
             System.out.println("Checking if ROOT directory is present");
