@@ -11,13 +11,25 @@ import javax.swing.ListModel;
  */
 public class Client {
 
+    private static Client uniqueInstance;
     private StreamExtender streamSocket;
     private String message;
     private String serverName;
     private SystemInformation sysinfo;
-
-    public Client() {
+    
+    
+    private Client() {
         connect();
+    }
+    
+    public static Client getInstance()
+    {
+        if (uniqueInstance == null)
+        {
+            uniqueInstance = new Client();
+        }
+        
+        return uniqueInstance;
     }
 
     public boolean connect() {
@@ -35,27 +47,35 @@ public class Client {
     }
 
     public boolean createNew(String txtUserName) {
-        try {
-            
+        try {          
+             
+            boolean wasSuccessful = false;
             streamSocket.sendMessage("101"); // inform server that wish to add new user
+            
             message = streamSocket.receiveMessage();
+            
             if (message.contains("102")) // ok to send new user details
             {
                 streamSocket.sendMessage(txtUserName);
             }
             else
             {
-                JOptionPane.showMessageDialog(null, "Something went wrong");
+                JOptionPane.showMessageDialog(null, "Something went wrong, expected 102 response from server");
             }
+            
             message = streamSocket.receiveMessage();
+            
             if (message.contains("103")) {
                 JOptionPane.showMessageDialog(null, "User successfully added");
-                return true;
+                wasSuccessful = true;
             } else if (message.contains("104")) {
-                JOptionPane.showMessageDialog(null, "That user already exists!");
+                JOptionPane.showMessageDialog(null, "That user already exists!");                
             } else {
-                JOptionPane.showMessageDialog(null, "Something went wrong");
+                JOptionPane.showMessageDialog(null, "Something went wrong, expected 103 success or 104 failed response");
             }
+            
+            return wasSuccessful;
+            
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -65,12 +85,18 @@ public class Client {
 
     public boolean login(String txtUserName) {
         try {
+                  
             // Send user name to server
             streamSocket.sendMessage("105"); // inform server that wish to login
             message = streamSocket.receiveMessage();
             if (message.contains("102")) // ok to send new user details
             {
                 streamSocket.sendMessage(txtUserName);
+            }
+            else
+            {
+                JOptionPane.showMessageDialog(null, "Something went wrong, expected 102 response from server");
+                return false;
             }
             message = streamSocket.receiveMessage();
             if (message.contains("106")) {
@@ -80,7 +106,7 @@ public class Client {
                 JOptionPane.showMessageDialog(null, "User details do not exist on server"
                         + "try creating a account");
             } else {
-                JOptionPane.showMessageDialog(null, "Something went wrong");
+                JOptionPane.showMessageDialog(null, "Something went wrong, expected 106 or 107 response from server");
             }
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -89,8 +115,9 @@ public class Client {
         return false;
     }
 
-    public void logout() {
-        try {
+    public boolean logout() {
+         boolean wasSuccessful = false;
+         try {           
             if (!streamSocket.isClosed()) {
                 streamSocket.sendMessage("300");
                 message = streamSocket.receiveMessage();
@@ -98,11 +125,13 @@ public class Client {
                 if (message.contains("301")) // acknowledge close request
                 {
                     streamSocket.close();
+                    wasSuccessful = true;
                 }
             }
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+        return wasSuccessful;
     }
 
     public void upload(File file) {
@@ -112,10 +141,7 @@ public class Client {
             System.out.println(message);
             if (message.contains("203")) {
                 streamSocket.sendMessage(file.getName() + ";" + (int) file.length());
-                System.out.println(file.getName());
-                System.out.println((int) file.length());
-
-
+                
                 message = streamSocket.receiveMessage();
                 System.out.println(message);
                 if (message.contains("204")) {
@@ -173,7 +199,7 @@ public class Client {
     catch (IOException ex)
     {
             ex.printStackTrace();
-            System.out.println("feck");
+            System.out.println("An issue occured while downloading");
     }
         return false;
 }

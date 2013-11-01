@@ -17,9 +17,9 @@ public class DirectoryPanel extends javax.swing.JPanel {
     private Client client;
     private DefaultListModel<String> files;
 
-    public DirectoryPanel(Client client) {
+    public DirectoryPanel() {
         initComponents();
-        this.client = client;
+        client = Client.getInstance();
         lblSelectedFile.setText("None");
     }
 
@@ -45,7 +45,6 @@ public class DirectoryPanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jLabelSel = new javax.swing.JLabel();
         lblSelectedFile = new javax.swing.JLabel();
-        btnDelete = new javax.swing.JButton();
 
         setPreferredSize(new java.awt.Dimension(380, 250));
 
@@ -76,8 +75,6 @@ public class DirectoryPanel extends javax.swing.JPanel {
 
         lblSelectedFile.setText("None");
 
-        btnDelete.setText("Delete");
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -96,10 +93,8 @@ public class DirectoryPanel extends javax.swing.JPanel {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(btnUpload)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(btnDownload)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(btnDelete)))
-                        .addGap(0, 133, Short.MAX_VALUE)))
+                                .addComponent(btnDownload)))
+                        .addGap(0, 206, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -116,8 +111,7 @@ public class DirectoryPanel extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 14, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnUpload)
-                    .addComponent(btnDownload)
-                    .addComponent(btnDelete))
+                    .addComponent(btnDownload))
                 .addContainerGap())
         );
 
@@ -147,7 +141,12 @@ public class DirectoryPanel extends javax.swing.JPanel {
                 if (returnval == JFileChooser.APPROVE_OPTION) {
                     File f = new File(jfc.getSelectedFile().getAbsolutePath(), lblSelectedFile.getText());
                     System.out.println(f);
-                    client.download(f);
+                    boolean result = client.download(f);
+                    if (result)
+                        JOptionPane.showMessageDialog(null, "Download Successful");
+                    else
+                        JOptionPane.showMessageDialog(null, "Download failed");
+                           
                 }
             }
     }//GEN-LAST:event_btnDownloadActionPerformed
@@ -158,7 +157,6 @@ public class DirectoryPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_jlistFilesValueChanged
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnDelete;
     private javax.swing.JButton btnDownload;
     private javax.swing.JButton btnUpload;
     private javax.swing.JLabel jLabel1;

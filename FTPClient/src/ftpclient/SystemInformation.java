@@ -1,8 +1,6 @@
 /**
  * @author William
- * 
- * Modified version from - http://www.mkyong.com/java/how-to-read-xml-file-in-java-dom-parser/
- * 
+ *  
  * This will "hide" but also allow the address and port details be updated if necessary
  */
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -25,7 +23,7 @@ public class SystemInformation {
         return address;
     }
 
-    public void setAddress(String address) {
+    private void setAddress(String address) {
         this.address = address;
     }
 
@@ -33,7 +31,7 @@ public class SystemInformation {
         return port;
     }
 
-    public void setPort(int port) {
+    private void setPort(int port) {
         this.port = port;
     }
     private int port;
@@ -44,7 +42,8 @@ public class SystemInformation {
     }
     
     private void FetchDetailsFromXML(String file)
-    {
+    {        
+        // Modified version from - http://www.mkyong.com/java/how-to-read-xml-file-in-java-dom-parser/
         try 
         {
             File fXMLfile = new File(file);

@@ -8,24 +8,22 @@ import javax.swing.event.ListSelectionListener;
 
 public class FTPclientGUI extends JFrame implements ActionListener, WindowListener {
 
-    private JPanel panel_main,
-            panel_new,                      
+    private JPanel panel_main,                                  
             cardPanel;
     private DirectoryPanel directoryPanel;
     private LoginPanel loginPanel;
-    private JoinPanel joinPanel;
-            
+    private JoinPanel joinPanel;            
     private CardLayout cardLayout;
     private JMenu fileMenu;
     private Toolkit toolkit;
     private JLabel lblname;    
     private JButton btnNew, btnExisting;   
     private String serverName = "";
-    private Container cPane;    
+    private Container cPane;
     private Client client;
 
     public FTPclientGUI() {
-        client = new Client();
+        client = Client.getInstance();
         setTitle("FTP - Client");
         setSize(400, 300);
         setResizable(false);
@@ -42,9 +40,9 @@ public class FTPclientGUI extends JFrame implements ActionListener, WindowListen
         createFileMenu();
         setJMenuBar(menuBar);
         menuBar.add(fileMenu);        
-        directoryPanel = new DirectoryPanel(client);
-        loginPanel = new LoginPanel(client, cardLayout, cardPanel, directoryPanel); 
-        joinPanel = new JoinPanel(client, cardLayout, cardPanel); 
+        directoryPanel = new DirectoryPanel();
+        loginPanel = new LoginPanel(cardLayout, cardPanel, directoryPanel); 
+        joinPanel = new JoinPanel(cardLayout, cardPanel); 
         cardPanel.add(loginPanel, "2");
         cardPanel.add(joinPanel, "3");
         cardPanel.add(directoryPanel, "4");
@@ -77,9 +75,6 @@ public class FTPclientGUI extends JFrame implements ActionListener, WindowListen
     private void createFileMenu() {
         JMenuItem item;
         fileMenu = new JMenu("File");
-        item = new JMenuItem("EXIT");
-        item.addActionListener(this);
-        fileMenu.add(item);
         item = new JMenuItem("Log off");
         item.addActionListener(this);
         fileMenu.add(item);
@@ -91,17 +86,16 @@ public class FTPclientGUI extends JFrame implements ActionListener, WindowListen
 
         actionName = actionEvent.getActionCommand();
 
-        if (actionName.equals("EXIT")) {
-            client.exit();
+        if (actionName.equals("Log off")) {
+            boolean success = client.logout();
+            if (success)
+                JOptionPane.showMessageDialog(null, "Successfully logged off, Goodbye");
             System.exit(0);
-        } else if (actionName.equals("Log off")) {
-            client.logout();
-            cardLayout.show(cardPanel, "1");
         } else if (actionEvent.getSource().equals(btnNew)) {
             // Show new user screen
-            cardLayout.show(cardPanel, "3"); // Show the create new User panel
+           cardLayout.show(cardPanel, "3"); // Show the create new User panel
         } else if (actionEvent.getSource().equals(btnExisting)) {
-            // Show the login screen
+            // Show the login screen     
             cardLayout.show(cardPanel, "2"); // Show login panel  
         }    
     }
