@@ -208,10 +208,10 @@ public class Client {
     public DefaultListModel<String> fetchDirectoryListing() {
         DefaultListModel<String> list = new DefaultListModel<String>();
         try {
-            streamSocket.sendMessage("200");
+            streamSocket.sendMessage("200"); // request directory listing
             message = streamSocket.receiveMessage();
             //System.out.println(message);
-            if (message.contains("201")) // receiving
+            if (message.contains("201")) // receieving listing in next transmission
             {
                 message = "";
                 message = streamSocket.receiveMessage();
@@ -220,7 +220,7 @@ public class Client {
                 for (String file : array) {
                     list.addElement(file);
                 }
-            } else if (message.contains("202")) {
+            } else {
                 JOptionPane.showMessageDialog(null, "No directory info found");
             }
         } catch (IOException ex) {
