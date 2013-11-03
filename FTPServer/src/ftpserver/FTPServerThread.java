@@ -25,7 +25,7 @@ public class FTPServerThread implements Runnable {
 
         try {
 
-            myStreamSocket.sendMessage("Now connected to " + serverName);
+            myStreamSocket.sendMessage("100 - Now connected to " + serverName);
 
             while (session) {
 
