@@ -1,21 +1,28 @@
+
 import java.awt.CardLayout;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 public class JoinPanel extends javax.swing.JPanel {
+
     private CardLayout cardLayoutRef;
-    private JPanel cardPanelRef;    
+    private JPanel cardPanelRef;
     private Client clientRef;
+
     /**
      * Creates new form LoginPanel
      */
     public JoinPanel(CardLayout cardLayout, JPanel cardPanel) {
         initComponents();
-        
+
         clientRef = Client.getInstance();
         cardLayoutRef = cardLayout;
-        cardPanelRef = cardPanel;        
-        jLblLogo.setIcon(new javax.swing.ImageIcon(getClass().getResource("logo.png")));
+        cardPanelRef = cardPanel;
+        try {
+            jLblLogo.setIcon(new javax.swing.ImageIcon(getClass().getResource("logo.png")));
+        } catch (Exception ex) {
+            jLblLogo.setText("SUPER FTP");
+        }
     }
 
     /**
@@ -89,30 +96,25 @@ public class JoinPanel extends javax.swing.JPanel {
 
     private void btnLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoginActionPerformed
         // TODO add your handling code here:
-        boolean successful = clientRef.createNew(txtFieldUsername.getText());        
-        if (successful)
-        {            
+        boolean successful = clientRef.createNew(txtFieldUsername.getText());
+        if (successful) {
             boolean successfulLogin = clientRef.login(txtFieldUsername.getText());
-            if (successfulLogin)
-            {
-                txtFieldUsername.setText("");        
-                cardLayoutRef.show(cardPanelRef, "4");                         
-            }            
-        }
-        else
-        {            
+            if (successfulLogin) {
+                txtFieldUsername.setText("");
+                cardLayoutRef.show(cardPanelRef, "4");
+            }
+        } else {
             JOptionPane.showMessageDialog(null, "Server says no");
         }
-        
+
         txtFieldUsername.setText("");
-        
+
     }//GEN-LAST:event_btnLoginActionPerformed
 
     private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
         // TODO add your handling code here:
         cardLayoutRef.show(cardPanelRef, "1");
     }//GEN-LAST:event_btnCancelActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancel;
     private javax.swing.JButton btnLogin;

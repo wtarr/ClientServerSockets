@@ -1,3 +1,4 @@
+
 import javax.swing.JOptionPane;
 import java.io.*;
 import java.net.InetAddress;
@@ -16,28 +17,31 @@ public class Client {
     private String message;
     private String serverName;
     private SystemInformation sysinfo;
-    
-    
+
     private Client() {
         connect();
     }
-    
-    public static Client getInstance()
-    {
-        if (uniqueInstance == null)
-        {
+
+    public static Client getInstance() {
+        if (uniqueInstance == null) {
             uniqueInstance = new Client();
         }
-        
+
         return uniqueInstance;
     }
 
     public boolean connect() {
         try {
-            sysinfo = new SystemInformation("systeminfo.xml");
-            streamSocket = new StreamExtender(InetAddress.getByName(sysinfo.getAddress()), sysinfo.getPort());
+            try {
+                sysinfo = new SystemInformation("systeminfo.xml");
+                streamSocket = new StreamExtender(InetAddress.getByName(sysinfo.getAddress()), sysinfo.getPort());
+            } catch (Exception ex) {
+                // Cant read file so default to localhost and port 12000
+                streamSocket = new StreamExtender(InetAddress.getByName("localhost"), 12000);
+            }
             serverName = streamSocket.receiveMessage();
-            System.out.println(serverName);
+            JOptionPane.showMessageDialog(null, serverName);
+            //System.out.println(serverName);
             return true;
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -47,35 +51,33 @@ public class Client {
     }
 
     public boolean createNew(String txtUserName) {
-        try {          
-             
+        try {
+
             boolean wasSuccessful = false;
             streamSocket.sendMessage("101"); // inform server that wish to add new user
-            
+
             message = streamSocket.receiveMessage();
-            
+
             if (message.contains("102")) // ok to send new user details
             {
                 streamSocket.sendMessage(txtUserName);
-            }
-            else
-            {
+            } else {
                 JOptionPane.showMessageDialog(null, "Something went wrong, expected 102 response from server");
             }
-            
+
             message = streamSocket.receiveMessage();
-            
+
             if (message.contains("103")) {
                 JOptionPane.showMessageDialog(null, "User successfully added");
                 wasSuccessful = true;
             } else if (message.contains("104")) {
-                JOptionPane.showMessageDialog(null, "That user already exists!");                
+                JOptionPane.showMessageDialog(null, "That user already exists!");
             } else {
                 JOptionPane.showMessageDialog(null, "Something went wrong, expected 103 success or 104 failed response");
             }
-            
+
             return wasSuccessful;
-            
+
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -85,16 +87,14 @@ public class Client {
 
     public boolean login(String txtUserName) {
         try {
-                  
+
             // Send user name to server
             streamSocket.sendMessage("105"); // inform server that wish to login
             message = streamSocket.receiveMessage();
             if (message.contains("102")) // ok to send new user details
             {
                 streamSocket.sendMessage(txtUserName);
-            }
-            else
-            {
+            } else {
                 JOptionPane.showMessageDialog(null, "Something went wrong, expected 102 response from server");
                 return false;
             }
@@ -116,8 +116,8 @@ public class Client {
     }
 
     public boolean logout() {
-         boolean wasSuccessful = false;
-         try {           
+        boolean wasSuccessful = false;
+        try {
             if (!streamSocket.isClosed()) {
                 streamSocket.sendMessage("300");
                 message = streamSocket.receiveMessage();
@@ -141,7 +141,7 @@ public class Client {
             System.out.println(message);
             if (message.contains("203")) {
                 streamSocket.sendMessage(file.getName() + ";" + (int) file.length());
-                
+
                 message = streamSocket.receiveMessage();
                 System.out.println(message);
                 if (message.contains("204")) {
@@ -154,7 +154,7 @@ public class Client {
                     }
                 }
             } else {
-                JOptionPane.showMessageDialog(null, "oh fudge it, error in upload");
+                JOptionPane.showMessageDialog(null, "There was an error in uploading the file");
             }
 
         } catch (IOException ex) {
@@ -165,10 +165,10 @@ public class Client {
     }
 
     public boolean download(File file) {
-        
-        try {            
+
+        try {
             int fileSize = 0;
-            
+
             streamSocket.sendMessage("207");  // requesting to download a file
             message = streamSocket.receiveMessage(); // wait for server to acknowledge
             //System.out.println(message);
@@ -182,28 +182,30 @@ public class Client {
             if (message.contains("213")) {
                 // file exists on server
                 streamSocket.sendMessage("209"); // request file size
+
+
+                fileSize =
+                        Integer.parseInt(streamSocket.receiveMessage()); // the file size 
+
+                streamSocket.sendMessage("210"); // OK GO!!!
+                // This is it, file inbound
+
+                streamSocket.recieveFile(file, fileSize);
+
+
+                return true;
             }
 
-            fileSize = 
-                    Integer.parseInt(streamSocket.receiveMessage()); // the file size 
-            
-            streamSocket.sendMessage("210"); // OK GO!!!
-            // This is it, file inbound
-            
-            streamSocket.recieveFile(file, fileSize);          
+            return false;
 
-            
-            return true;
-
-    }
-    catch (IOException ex)
-    {
+        } catch (IOException ex) {
             ex.printStackTrace();
             System.out.println("An issue occured while downloading");
-    }
+        }
         return false;
-}
-public DefaultListModel<String> fetchDirectoryListing() {
+    }
+
+    public DefaultListModel<String> fetchDirectoryListing() {
         DefaultListModel<String> list = new DefaultListModel<String>();
         try {
             streamSocket.sendMessage("200");
@@ -229,15 +231,12 @@ public DefaultListModel<String> fetchDirectoryListing() {
     }
 
     public void exit() {
-        if (streamSocket.isClosed())
-        {
+        if (streamSocket.isClosed()) {
             System.exit(0);
-        }
-        else
-        {
+        } else {
             logout();
             System.exit(0);
         }
-       
+
     }
 }
