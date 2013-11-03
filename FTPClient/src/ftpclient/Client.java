@@ -33,7 +33,9 @@ public class Client {
     public boolean connect() {
         try {
             try {
-                sysinfo = new SystemInformation("systeminfo.xml");
+                //sysinfo = new SystemInformation(new File(getClass().getResource("./config/systeminfo.xml")));
+                File f = new File(getClass().getResource("config/systeminfo.xml").toURI());
+                sysinfo = new SystemInformation(f);
                 streamSocket = new StreamExtender(InetAddress.getByName(sysinfo.getAddress()), sysinfo.getPort());
             } catch (Exception ex) {
                 // Cant read file so default to localhost and port 12000

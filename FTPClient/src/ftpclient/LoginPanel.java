@@ -18,7 +18,7 @@ public class LoginPanel extends javax.swing.JPanel {
         cardPanelRef = cardPanel;
         directoryPanelRef = directoryPanel;
         try {
-        jLblLogo.setIcon(new javax.swing.ImageIcon(getClass().getResource("logo.png")));
+        jLblLogo.setIcon(new javax.swing.ImageIcon(getClass().getResource("images/logo.png")));
         } catch (Exception ex)
         {
             jLblLogo.setText("SUPER FTP");

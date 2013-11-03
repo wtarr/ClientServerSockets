@@ -19,7 +19,7 @@ public class JoinPanel extends javax.swing.JPanel {
         cardLayoutRef = cardLayout;
         cardPanelRef = cardPanel;
         try {
-            jLblLogo.setIcon(new javax.swing.ImageIcon(getClass().getResource("logo.png")));
+            jLblLogo.setIcon(new javax.swing.ImageIcon(getClass().getResource("images/logo.png")));
         } catch (Exception ex) {
             jLblLogo.setText("SUPER FTP");
         }

@@ -36,17 +36,17 @@ public class SystemInformation {
     }
     private int port;
         
-    public SystemInformation(String filename) {
+    public SystemInformation(File file) {
         
-        FetchDetailsFromXML(filename);
+        FetchDetailsFromXML(file);
     }
     
-    private void FetchDetailsFromXML(String file)
+    private void FetchDetailsFromXML(File file)
     {        
         // Modified version from - http://www.mkyong.com/java/how-to-read-xml-file-in-java-dom-parser/
         try 
         {
-            File fXMLfile = new File(file);
+            File fXMLfile = file;
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
             Document doc = dBuilder.parse(fXMLfile);
