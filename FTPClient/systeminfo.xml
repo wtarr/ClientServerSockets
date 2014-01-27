@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<ftp>
+	<userinfo id="1">
+		<address>localhost</address>
+		<port>12000</port>		
+	</userinfo>	
+</ftp>
